@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>feed_viz V1.0</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+<div>
+    <form id="panel">
+        <div class="row">
+            <label for="exchange">Exchange</label>
+            <select name="exchange" id="exchange">
+                <option name="reddit">Reddit</option>
+                <option name="4chan" disabled title="Coming soon">4chan</option>
+            </select>
+
+            <label for="nsfw" title="Show items with 'over_18' flag">over 18
+                <input type="checkbox" id="nsfw" onchange="onNsfwChange()">
+            </label>
+
+            <div style="float:right">
+                <span id="status">Idle</span>
+                <button type="button" onclick="onConnectClick()">Connect</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <label for="topics">Comma-separated topics</label>
+            <textarea name="topics" id="topics"
+                      placeholder="Comma-separated topics in format (submission|comment).(<subreddit>|*) (See presets for examples)"
+                      rows="2"
+            ></textarea>
+        </div>
+
+        <div class="row">
+            <input name="preset-name" id="preset-name"
+                   placeholder="Name"
+            >
+            <button type="button" onclick="onSavePresetClick()">Save preset</button>
+
+            <label for="presets">Load preset</label>
+            <select id="presets" onchange="onPresetSelect()"></select>
+
+            <div style="float: right">
+                <label for="col-count">Columns</label>
+                <select id="col-count" onchange="onColCountChange()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="6" selected>6</option>
+                    <option value="12">12</option>
+                </select>
+                <label for="max-images">Maximum images</label>
+                <select id="max-images" onchange="onMaxImageChange()">
+                    <option value="256" selected>256</option>
+                    <option value="512" selected>512</option>
+                    <option value="1024" selected>1024</option>
+                    <option value="2048">2048</option>
+                    <option value="2048">4096</option>
+                </select>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<div id="output"></div>
+
+<script src="js/main.js"></script>
+</body>
+
+</html>
