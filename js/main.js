@@ -22,10 +22,10 @@ window.onload = function () {
     M.Chips.init(document.querySelectorAll(".chips"), {
         placeholder: "Type topic and press 'Enter'",
         secondaryPlaceholder: "+Topic",
-        onChipAdd: function(elem, chip) {
+        onChipAdd: function (elem, chip) {
             if (!validateTopic(chip.firstChild.wholeText)) {
                 helpModal.open();
-                chips.deleteChip(chips.chipsData.length-1);
+                chips.deleteChip(chips.chipsData.length - 1);
             }
         }
     });
@@ -71,8 +71,8 @@ function onConnectClick() {
         .dispatchEvent(
             new KeyboardEvent(
                 "keydown",
-                {bubbles : true, cancelable : true, key : "Enter", keyCode: 13}
-                )
+                {bubbles: true, cancelable: true, key: "Enter", keyCode: 13}
+            )
         );
 
     if (socket) {
@@ -121,12 +121,14 @@ function connect(exchange, topics) {
     };
 
     socket.onclose = (e) => {
-        console.log(e);
-        console.log(socket.CLOSED);
-        document.getElementById("connect").innerHTML = "Disconnected";
-        document.getElementById("connect").classList.remove("connected");
-        document.getElementById("connect").classList.remove("connecting");
-        document.getElementById("connect").classList.add("disconnected");
+        if (socket.readyState === socket.CLOSING || socket.readyState === socket.CLOSED) {
+            console.log(socket);
+            console.log(e);
+            document.getElementById("connect").innerHTML = "Disconnected";
+            document.getElementById("connect").classList.remove("connected");
+            document.getElementById("connect").classList.remove("connecting");
+            document.getElementById("connect").classList.add("disconnected");
+        }
     };
 
     socket.onerror = (e) => {
