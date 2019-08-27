@@ -3,81 +3,173 @@
 
 <head>
     <meta charset="utf-8">
-    <title>feed_viz V1.0</title>
+    <title>feed_viz V1.2</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
 
-    <link rel="stylesheet" href="css/normalize.css">
-    <link rel="stylesheet" href="css/main.css">
-
-    <meta name="theme-color" content="#fafafa">
+    <link href="css/material-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/materialize.min.css">
+    <link rel="stylesheet" href="css/main.css?v=1.2">
 </head>
 
 <body>
-
 <div>
-    <form id="panel">
-        <div class="row">
-            <label for="exchange">Exchange</label>
-            <select name="exchange" id="exchange">
-                <option name="reddit">Reddit</option>
-                <option name="4chan" disabled title="Coming soon">4chan</option>
-            </select>
+    <div class="card">
+        <div class="card-content">
+            <form>
+                <div class="col s12">
+                    <ul class="tabs" id="tabs">
+                        <li class="tab col s3"><a class="active" href="#conntab">Connect</a></li>
+                        <li class="tab col s3"><a href="#preftab">Display</a></li>
+                        <li class="tab col s3"><a href="#presettab">Presets</a></li>
+                    </ul>
+                </div>
 
-            <label for="nsfw" title="Show items with 'over_18' flag">over 18
-                <input type="checkbox" id="nsfw" onchange="onNsfwChange()">
-            </label>
+                <div id="conntab">
 
-            <div style="float:right">
-                <span id="status">Idle</span>
-                <button type="button" onclick="onConnectClick()">Connect</button>
-            </div>
+                    <a id="help-button" class="modal-trigger" href="#help">Help!</a>
+
+                    <div class="row">
+                        <div class="input-field col s5">
+                            <select name="exchange" id="exchange" onchange="onExchangeChange()">
+                                <option value="reddit">Reddit</option>
+                                <option value="chan">*chan</option>
+                            </select>
+                            <label for="exchange">Exchange</label>
+                        </div>
+                        <p class="col s3">
+                            <label for="nsfw" title="Show items with 'over_18' flag" style="line-height: 85px">
+                                <input type="checkbox" class="filled-in" id="nsfw" onchange="onNsfwChange()">
+                                <span>NSFW</span>
+                            </label>
+                        </p>
+                        <div class="col s3" style="line-height: 75px">
+                            <button type="button" class="btn"
+                                    onclick="onConnectClick()" id="connect">Connect
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12">
+                            <label for="topics">Topics</label>
+                            <div class="chips" id="chips">
+                                <input name="topics" id="topics">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="row" id="preftab">
+                    <div class="input-field col s6">
+                        <select id="col-count" onchange="onColCountChange()">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4" selected>4</option>
+                            <option value="6">6</option>
+                            <option value="12">12</option>
+                        </select>
+                        <label for="col-count">Columns</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <select id="max-images" onchange="onMaxImageChange()">
+                            <option value="256">256</option>
+                            <option value="512">512</option>
+                            <option value="1024" selected>1024</option>
+                            <option value="2048">2048</option>
+                            <option value="4096">4096</option>
+                        </select>
+                        <label for="max-images">Maximum images</label>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div id="presettab">
+                    <div class="row">
+                        <div class="col s9">
+                            <div class="input-field">
+                                <input type="text" name="preset-name" id="preset-name">
+                                <label for="preset-name">Preset name</label>
+                            </div>
+                        </div>
+
+                        <div class="col s3">
+                            <button type="button" class="btn" onclick="onSavePresetClick()">Save</button>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <select id="presets" class="browser-default" onchange="onPresetSelect()"></select>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="row">
-            <label for="topics">Comma-separated topics</label>
-            <textarea name="topics" id="topics"
-                      placeholder="Comma-separated topics in format (submission|comment).(<subreddit>|*) (See presets for examples)"
-                      rows="2"
-            ></textarea>
-        </div>
-
-        <div class="row">
-            <input name="preset-name" id="preset-name"
-                   placeholder="Name"
-            >
-            <button type="button" onclick="onSavePresetClick()">Save preset</button>
-
-            <label for="presets">Load preset</label>
-            <select id="presets" onchange="onPresetSelect()"></select>
-
-            <div style="float: right">
-                <label for="col-count">Columns</label>
-                <select id="col-count" onchange="onColCountChange()">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="6" selected>6</option>
-                    <option value="12">12</option>
-                </select>
-                <label for="max-images">Maximum images</label>
-                <select id="max-images" onchange="onMaxImageChange()">
-                    <option value="256" selected>256</option>
-                    <option value="512" selected>512</option>
-                    <option value="1024" selected>1024</option>
-                    <option value="2048">2048</option>
-                    <option value="2048">4096</option>
-                </select>
-            </div>
-        </div>
-
-    </form>
 </div>
 
 <div id="output"></div>
 
-<script src="js/main.js"></script>
+<div class="fixed-action-btn">
+    <a class="btn-floating btn-large waves-effect waves-light modal-trigger" href="#help">
+        <span class="help">?</span>
+    </a>
+</div>
+
+<!-- Help -->
+<div id="help" class="modal">
+    <div class="modal-content">
+        <h3>Help</h3>
+        <h4>What is it</h4>
+        <p>This is a tool that displays images from various feeds as they are posted
+            in real time.</p>
+        <p>You can subscribe to the feed via Websocket to display the image
+            gallery in your browser.</p>
+        <h4>How to use</h4>
+        <ol>
+            <li>Select feed from the <b>Exchange</b> list</li>
+            <li>Enter topics<sup>*</sup> or load a preset from the <b>Presets</b> tab</li>
+            <li>Press the <b>Connect</b> button.</li>
+        </ol>
+
+        <p>*<i>See <a href="#help-topic">topic format</a></i></p>
+
+        <h4 id="help-topic">Topic format</h4>
+        <p><b>For Reddit</b>: Format is <code>&lt;type&gt;.&lt;subreddit&gt;</code></p>
+        <p>Examples:</p>
+        <p><code>submission.aww</code> gets all posts from /r/aww</p>
+        <p><code>comment.aww</code> gets all comments from /r/aww</p>
+        <p><code>*.aww</code> gets everything from /r/aww</p>
+        <p><code>comment.*</code> gets <i>all</i> comments from reddit (Not recommended)</p>
+        <p><code>#</code> gets <i>everything</i> from reddit (Not recommended)</p>
+
+        <p><b>For *chan</b>: Format is <code>&lt;chan&gt;.&lt;type&gt;.&lt;board&gt;</code></p>
+        <p><code>4chan.post.a</code> gets all the posts from /a/</p>
+        <p><code>4chan.thread.a</code> gets all the threads from /a/</p>
+        <p><code>4chan.*.a</code> gets everything from /a/</p>
+        <p><code>4chan.*.*</code> gets everything from 4chan</p>
+        <p><code>4chan.#</code> is the same as above</p>
+
+        <p>See <a href="https://github.com/simon987/chan_feed" target="_blank">chan_feed</a> for an up to date list of
+            supported image boards</p>
+        <h4>Source code</h4>
+        <ul>
+            <li><a href="https://github.com/simon987/reddit_feed" target="_blank">reddit_feed</a>: reddit crawler</li>
+            <li><a href="https://github.com/simon987/chan_feed" target="_blank">chan_feed</a>: *chan crawler</li>
+            <li><a href="https://github.com/simon987/ws_feed_adapter" target="_blank">ws_feed_adapter</a>: WebSocket server</li>
+            <li><a href="https://github.com/simon987/feed_viz" target="_blank">feed_viz</a>: This website</li>
+            <li><a href="https://github.com/simon987/feed_arhiver" target="_blank">feed_archiver</a>: offline archival</li>
+        </ul>
+    </div>
+</div>
+
+<script src="js/materialize.min.js"></script>
+<script src="js/main.js?v=1.2"></script>
 </body>
 
 </html>

@@ -3,15 +3,36 @@ let currentImages = 0;
 
 let socket = undefined;
 
-let colCount = 6;
+let colCount = 4;
 let cols = [];
 let colHeights = [];
 
 let loadNsfw = false;
 
 let storage = window.localStorage;
+let chips;
+let exchange = "reddit";
+
+let helpModal;
 
 window.onload = function () {
+
+    M.Tabs.init(document.getElementById("tabs"), {});
+    M.FormSelect.init(document.querySelectorAll("select"), {});
+    M.Chips.init(document.querySelectorAll(".chips"), {
+        placeholder: "Type topic and press 'Enter'",
+        secondaryPlaceholder: "+Topic",
+        onChipAdd: function(elem, chip) {
+            if (!validateTopic(chip.firstChild.wholeText)) {
+                helpModal.open();
+                chips.deleteChip(chips.chipsData.length-1);
+            }
+        }
+    });
+    chips = M.Chips.getInstance(document.getElementById("chips"));
+    M.Modal.init(document.querySelectorAll(".modal"), {});
+    helpModal = M.Modal.getInstance(document.getElementById("help"));
+
     setDefaultPresets();
     updatePresets();
 
@@ -46,60 +67,67 @@ function resetGallery() {
 
 function onConnectClick() {
 
+    document.getElementById("topics")
+        .dispatchEvent(
+            new KeyboardEvent(
+                "keydown",
+                {bubbles : true, cancelable : true, key : "Enter", keyCode: 13}
+                )
+        );
+
     if (socket) {
         socket.close()
     }
 
-    document.getElementById("status").innerHTML = "Connecting...";
-    document.getElementById("status").style = "color: orange";
+    document.getElementById("connect").innerHTML = "Connecting..";
+    document.getElementById("connect").classList.add("connecting");
 
     resetGallery();
 
-    let topics = document.getElementById("topics").value
-        .toLowerCase()
-        .split(/[\s,]+/ig)
-        .filter(topic => topic !== "");
+    let topics = chips.chipsData.map(chip => chip.tag);
 
     if (topics.length === 0) {
         alert("You must specify at least one topic");
         return
     }
 
-    connect(topics);
+    connect(exchange, topics);
 }
 
-function connect(topics) {
+function connect(exchange, topics) {
 
-    socket = new WebSocket("ws://localhost:3090/socket");
+    socket = new WebSocket("wss://feed.the-eye.eu/socket");
 
     socket.onmessage = msg => {
         let j = JSON.parse(msg.data);
 
-        if (j.urls && ((loadNsfw && j.over_18) || !j.over_18)) {
+        if (j.urls && ((loadNsfw && j.over_18) || !j.over_18 || !j.hasOwnProperty("over_18"))) {
             j.urls
                 .filter(url => /http?s:\/\/.*(.jpg|.jpeg|.bmp|.png|.gif|.jpeg:orig|.jpg:orig)$/.test(url))
-                .forEach(url => appendToGallery(createImage(url)));
+                .forEach(url => appendToGallery(createImage(url, j)));
         }
     };
 
     socket.onopen = () => {
         socket.send(JSON.stringify({
-            exchange: "reddit",
+            exchange: exchange,
             topics: topics
         }));
 
-        document.getElementById("status").innerHTML = "Connected";
-        document.getElementById("status").style = "color: green";
+        document.getElementById("connect").innerHTML = "Connected";
+        document.getElementById("connect").classList.remove("connecting");
+        document.getElementById("connect").classList.remove("disconnected");
+        document.getElementById("connect").classList.add("connected");
     };
 
-    socket.onclose = () => {
-        document.getElementById("status").innerHTML = "Disconnected";
-        document.getElementById("status").style = "color: red";
+    socket.onclose = (e) => {
+        document.getElementById("connect").innerHTML = "Disconnected";
+        document.getElementById("connect").classList.remove("connected");
+        document.getElementById("connect").classList.remove("connecting");
+        document.getElementById("connect").classList.add("disconnected");
     };
 
     socket.onerror = (e) => {
-        document.getElementById("status").innerHTML = "Websocket error";
-        document.getElementById("status").style = "color: orange";
         console.log(e)
     };
 
@@ -108,10 +136,13 @@ function connect(topics) {
     }
 }
 
-function createImage(src) {
+function createImage(src, j) {
     const img = document.createElement("img");
     img.setAttribute("class", "img");
     img.setAttribute("src", src);
+    img.onclick = function () {
+        window.open("https://reddit.com/" + j["id"]);
+    };
 
     img.onerror = function () {
         //Don't display broken images
@@ -194,33 +225,42 @@ function setPreset(name, topics) {
 }
 
 function setDefaultPresets() {
-    setPreset("Reddit animals", "*.aww, *.awww, *.cats, *.eyebleach, *.cute, *.dogs, " +
-        "*.koalas, *.lynxes, comment.dogs, *.dogpictures, submission.puppies, submission.puppy, " +
-        "submission.doge");
-    setPreset("Reddit birds", "submission.birds, submission.bird, submission.parrots, " +
-        "submission.birdpics, submission.birdwatching, submission.birding, submission.birdphotography");
-    setPreset("Reddit ocean", "*.ocean, *.oceangifs, *.swimming, " +
-        "*.algae, *.costalforaging, *.earthscience, *.freediving, " +
-        "*.hydrology *.lifeaquatic, *.marinelife, *.octopuses, " +
-        "*.scuba, *.seacreatureporn, *.seaweed, *.sharks, " +
-        "*.shipwrecks, *.water, *.whales, *.underwaterphotography");
+    setPreset("Reddit animals", ["*.aww", "*.awww", "*.cats", "*.eyebleach", "*.cute", "*.dogs",
+        "*.koalas", "*.lynxes", "comment.dogs", "*.dogpictures", "submission.puppies", "submission.puppy",
+        "submission.doge"]);
+    setPreset("Reddit birds", ["submission.birds", "submission.bird", "submission.parrots",
+        "submission.birdpics", "submission.birdwatching", "submission.birding", "submission.birdphotography"]);
+    setPreset("Reddit ocean", ["*.ocean", "*.oceangifs", "*.swimming",
+        "*.algae", "*.costalforaging", "*.earthscience", "*.freediving",
+        "*.hydrology", "*.lifeaquatic", "*.marinelife", "*.octopuses",
+        "*.scuba", "*.seacreatureporn", "*.seaweed", "*.sharks",
+        "*.shipwrecks", "*.water", "*.whales", "*.underwaterphotography"]);
 }
 
 function onPresetSelect() {
     let selection = document.getElementById("presets").value;
-    document.getElementById("topics").value = getPreset(selection);
+
+    while (chips.chipsData.length > 0) {
+        chips.deleteChip(0)
+    }
+    getPreset(selection).forEach(topic => {
+        chips.addChip({tag: topic})
+    });
+    M.toast({html: "Loaded preset"})
 }
 
 function onSavePresetClick() {
     let name = document.getElementById("preset-name").value;
-    let topics = document.getElementById("topics").value;
+    let topics = chips.chipsData.map(chip => chip.tag);
 
     if (name === "") {
-        alert("Invalid preset name!")
+        alert("Invalid preset name");
+        return;
     }
 
     setPreset(name, topics);
     updatePresets();
+    M.toast({html: "Saved preset"})
 }
 
 function updatePresets() {
@@ -250,6 +290,11 @@ function updatePresets() {
 function onMaxImageChange() {
     maxImages = document.getElementById("max-images").value;
     storage.setItem("max-images", maxImages);
+}
+
+function onExchangeChange() {
+    exchange = document.getElementById("exchange").value;
+    document.getElementById("nsfw").disabled = exchange !== "reddit"
 }
 
 function onNsfwChange() {
@@ -284,3 +329,7 @@ function onColCountChange() {
     images.forEach(img => appendToGallery(img));
 }
 
+function validateTopic(topic) {
+    return (exchange === "reddit" && /^(#$|((submission|comment|\*)\.(\w+|\*)$))/.test(topic)) ||
+        (exchange === "chan" && /^(#$|#\.\w+$|(4chan|lainchan|uboachan|22chan|wizchan|1chan|\*)\.(#$|(post|thread|\*)\.(\w+|\*)$))/.test(topic));
+}
