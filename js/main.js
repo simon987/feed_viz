@@ -140,9 +140,11 @@ function createImage(src, j) {
     const img = document.createElement("img");
     img.setAttribute("class", "img");
     img.setAttribute("src", src);
-    img.onclick = function () {
-        window.open("https://reddit.com/" + j["id"]);
-    };
+    if (exchange === "reddit") {
+        img.onclick = function () {
+            window.open("https://reddit.com/" + j["id"]);
+        };
+    }
 
     img.onerror = function () {
         //Don't display broken images
