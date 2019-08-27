@@ -60,7 +60,66 @@ form .btn {
     cursor: pointer;
 }
 
+.tabs .tab a {
+    color: #039be5;
+}
+
+.tabs .tab a.active, .tabs .tab a:hover {
+    color: #03a8f4;
+}
+
+.tabs .tab a:focus, .tabs .tab a:focus.active {
+    background-color: rgba(3, 155, 229,0.2);
+}
+
+input {
+    color: white;
+}
+
+.tabs .indicator {
+    background-color: #039be5;
+}
+
 body,html {
     padding: 0;
     margin: 0;
+    background: #424242;
+}
+
+.select-dropdown {
+    background-color: #424242;
+}
+
+.chip {
+    background-color: rgb(32, 137, 127);
+    color: lightgrey;
+}
+
+select {
+    color: white;
+}
+
+.caret {
+    fill: white !important;
+}
+
+.chips .input {
+    color: white;
+}
+/* label color */
+.input-field label {
+    color: lightgrey;
+}
+/* label focus color */
+.input-field input[type=text]:focus + label {
+    color: white;
+}
+/* label underline focus color */
+.input-field input[type=text]:focus {
+    border-bottom: 1px solid lightgray;
+    box-shadow: 0 1px 0 0 lightgrey;
+}
+/* icon prefix focus color */
+.input-field .prefix.active {
+    color: white;
 }
