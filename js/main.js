@@ -121,6 +121,8 @@ function connect(exchange, topics) {
     };
 
     socket.onclose = (e) => {
+        console.log(e);
+        console.log(socket.CLOSED);
         document.getElementById("connect").innerHTML = "Disconnected";
         document.getElementById("connect").classList.remove("connected");
         document.getElementById("connect").classList.remove("connecting");
@@ -174,8 +176,8 @@ function createGallery(count) {
 function popRow() {
     for (let i = 0; i < colCount; i++) {
         if (cols[i].hasChildNodes()) {
-            colHeights[i] -= cols[i].firstChild.height;
-            cols[i].firstChild.remove();
+            colHeights[i] -= cols[i].lastChild.height;
+            cols[i].lastChild.remove();
             currentImages -= 1;
         }
     }
@@ -199,7 +201,8 @@ function appendToGallery(child) {
         }
     }
 
-    cols[min].appendChild(child);
+    cols[min].prepend(child);
+
     if (!child.height) {
         colHeights[min] += 2400 / colCount;
         child.onload = function () {
