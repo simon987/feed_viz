@@ -101,8 +101,8 @@ function connect(exchange, topics) {
     socket.onmessage = msg => {
         let j = JSON.parse(msg.data);
 
-        if (j.urls && ((loadNsfw && j.over_18) || !j.over_18 || !j.hasOwnProperty("over_18"))) {
-            j.urls
+        if (j._urls && ((loadNsfw && j.over_18) || !j.over_18 || !j.hasOwnProperty("over_18"))) {
+            j._urls
                 .filter(url => /http?s:\/\/.*(.jpg|.jpeg|.bmp|.png|.gif|.jpeg:orig|.jpg:orig)$/.test(url))
                 .forEach(url => appendToGallery(createImage(url, j)));
         }
