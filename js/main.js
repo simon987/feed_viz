@@ -99,13 +99,15 @@ function connect(exchange, topics) {
     socket = new WebSocket("wss://feed.the-eye.eu/socket");
 
     socket.onmessage = msg => {
-        let j = JSON.parse(msg.data);
+        let items = JSON.parse(msg.data);
 
-        if (j._urls && ((loadNsfw && j.over_18) || !j.over_18 || !j.hasOwnProperty("over_18"))) {
-            j._urls
-                .filter(url => /http?s:\/\/.*(.jpg|.jpeg|.bmp|.png|.gif|.jpeg:orig|.jpg:orig)$/.test(url))
-                .forEach(url => appendToGallery(createImage(url, j)));
-        }
+        items.forEach(j => {
+            if (j._urls && ((loadNsfw && j.over_18) || !j.over_18 || !j.hasOwnProperty("over_18"))) {
+                j._urls
+                    .filter(url => /http?s:\/\/.*(.jpg|.jpeg|.bmp|.png|.gif|.jpeg:orig|.jpg:orig)$/.test(url))
+                    .forEach(url => appendToGallery(createImage(url, j)));
+            }
+        })
     };
 
     socket.onopen = () => {
